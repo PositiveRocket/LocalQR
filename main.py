@@ -6,6 +6,7 @@ import http.server
 import socketserver
 import socket
 import qrcode
+import sys
 from urllib.parse import quote
 
 def importFile(entry, button):
@@ -84,6 +85,7 @@ def renderQR(fileName):
     new_width = (root.winfo_width() + img.width()) 
     new_height = (root.winfo_height() + img.height() - 400)
     root.geometry(f"{new_width}x{new_height}")  # Resize the window to fit the QR code
+    generateQR_button.configure(state='disabled')  # Disable the button
 
 root = tk.Tk()
 root.title("Local QR Code Generator")
@@ -111,5 +113,16 @@ image_label = tk.Label(root)
 image_label.grid(row=0, column=1, rowspan=3)  # Place the label in the grid
 
 httpd = None  # Start the server in the current directory
+
+# start the server if a full file path is provided
+if len(sys.argv) > 1:
+    full_file_path = sys.argv[1]
+    file_path_entry.configure(state='normal')  # Enable editing
+    file_path_entry.delete(0, tk.END)  # Clear the entry field
+    file_path_entry.insert(0, os.path.basename(full_file_path))  # Insert the file name into the entry field
+    file_path_entry.configure(state='readonly')  # Disable editing
+    httpd = start_server(os.path.dirname(full_file_path))  # Start a new server
+    generateQR_button.configure(state='normal')  # Enable the button
+
 
 root.mainloop()
